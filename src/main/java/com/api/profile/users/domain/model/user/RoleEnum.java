@@ -5,6 +5,5 @@ package com.api.profile.users.domain.model.user;
  */
 public enum RoleEnum {
   ADMIN,
-  USERBTC,
-  USERBTB
+  USER
 }
