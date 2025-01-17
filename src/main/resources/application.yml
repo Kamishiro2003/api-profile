@@ -1,11 +1,5 @@
 server:
   port: 8080
-  ssl:
-    key-store: classpath:keystore.p12
-    key-store-password: ${KEY_STORE_PASSWORD}
-    key-store-type: ${KEY_STORE_TYPE}
-  http2:
-    enabled: true
 spring:
   application:
     name: users
@@ -16,7 +10,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect

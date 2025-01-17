@@ -1,10 +1,15 @@
 package com.api.profile.users.application.usecase.user;
 
+import com.api.profile.users.application.port.in.user.PasswordHashCreateUseCase;
 import com.api.profile.users.application.port.in.user.UserCreateUseCase;
 import com.api.profile.users.application.port.out.UserPersistencePort;
+import com.api.profile.users.domain.exception.FieldAlreadyExistException;
 import com.api.profile.users.domain.model.user.UserModel;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,12 +22,35 @@ public class UserCreateUseCaseImpl implements UserCreateUseCase {
 
   private final UserPersistencePort persistencePort;
 
+  private final PasswordHashCreateUseCase passwordHash;
+
   /**
    * {@inheritDoc}
    */
   @Override
   public UserModel createOne(UserModel data) {
+
     log.info("Starting user creation process");
-    return persistencePort.save(data);
+    LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+    data.setCreatedAt(now);
+    data.setUpdatedAt(now);
+    data.setIsActive(true);
+    data.setPassword(passwordHash.hashPassword(data.getPassword()));
+    try {
+      log.debug("saving user: {}", data);
+      return persistencePort.save(data);
+    } catch (DataIntegrityViolationException e) {
+      log.error("Caught exception: {}", e.getMessage());
+      if (e.getMessage().trim().contains("documentId_unique_constraint")) {
+        throw new FieldAlreadyExistException(
+            "DocumentId already exist, please insert another DocumentId",
+            "DOCUMENT-ID-ALREADY-EXIST");
+      } else if (e.getMessage().trim().contains("email_unique_constraint")) {
+        throw new FieldAlreadyExistException("Email already exist, please insert another email",
+            "EMAIL-ALREADY-EXIST");
+      } else {
+        throw e;
+      }
+    }
   }
 }
