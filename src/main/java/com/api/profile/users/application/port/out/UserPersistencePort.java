@@ -7,7 +7,7 @@ import com.api.profile.users.domain.model.user.UserModel;
  */
 public interface UserPersistencePort {
   /**
-   * Saves a new or existing user.
+   * Save a new or existing user.
    *
    * @param data the user to save.
    * @return the saved user.

@@ -8,7 +8,7 @@ import com.api.profile.users.domain.model.user.UserModel;
 public interface UserCreateUseCase {
 
   /**
-   * Creates a new user.
+   * Create a new user.
    *
    * @param data the user to create.
    * @return the created user.
