@@ -1,6 +1,7 @@
 package com.api.profile.users.infrastructure.adapter.in.rest.controller;
 
 import com.api.profile.users.application.port.in.user.UserCreateUseCase;
+import com.api.profile.users.application.port.in.user.UserRetrieveUseCase;
 import com.api.profile.users.infrastructure.adapter.in.rest.mapper.UserRestMapper;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.request.UserCreateRequest;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.response.UserResponse;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,13 +38,15 @@ public class UserController {
 
   private final UserCreateUseCase createUseCase;
 
+  private final UserRetrieveUseCase retrieveUseCase;
+
   private final UserRestMapper restMapper;
 
   /**
    * Create a new user entry.
    *
-   * @param createRequest the user creation request.
-   * @return the created user in a model response.
+   * @param createRequest the user creation request
+   * @return the created user
    */
   @Operation(summary = "Create a new user")
   @ApiResponses(
@@ -100,5 +105,58 @@ public class UserController {
     return new ResponseEntity<>(restMapper.toUserResponse(
         createUseCase.createOne(restMapper.createRequestToDomain(createRequest))),
         HttpStatus.CREATED);
+  }
+
+  /**
+   * Retrieve a user by document id.
+   *
+   * @param documentId the user document id
+   * @return the retrieved user
+   */
+  @Operation(summary = "Retrieve user by document id")
+  @ApiResponses(
+      value = {
+          @ApiResponse(
+              description = "Successfully retrieved user",
+              responseCode = "200",
+              content = {
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(
+                          implementation = UserResponse.class
+                      )
+                  )
+              }
+          ),
+          @ApiResponse(
+              description = "USER was not found",
+              responseCode = "401",
+              content = {
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = UserResponse.class)
+                  )
+              }
+          ),
+          @ApiResponse(
+              responseCode = "500",
+              description = "Internal Server Error. An unexpected error occurred on the server.",
+              content = {
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = UserResponse.class)
+                  )
+              }
+          )
+      }
+  )
+  @GetMapping("/{documentId}")
+  public ResponseEntity<UserResponse> getUserByDocumentId(
+      @PathVariable("documentId") String documentId
+  ) {
+
+    log.info("Received request to retrieve a user by document id");
+    return new ResponseEntity<>(
+        restMapper.toUserResponse(retrieveUseCase.findByDocumentId(documentId)), HttpStatus.OK);
   }
 }

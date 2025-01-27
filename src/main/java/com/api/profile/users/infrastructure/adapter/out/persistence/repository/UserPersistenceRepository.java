@@ -7,8 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /**
  * Repository interface for user persistence operations.
  */
-public interface UserPersistenceRepository
-    extends JpaRepository<UserPersistenceModel, String> {
+public interface UserPersistenceRepository extends JpaRepository<UserPersistenceModel, String> {
 
   /**
    * find a user by its documentId.
@@ -16,5 +15,5 @@ public interface UserPersistenceRepository
    * @param documentId the documentId of the user.
    * @return an {@code Optional} containing the user data, or empty if not found.
    */
-  Optional<UserPersistenceRepository> findByDocumentId(String documentId);
+  Optional<UserPersistenceModel> findByDocumentId(String documentId);
 }
