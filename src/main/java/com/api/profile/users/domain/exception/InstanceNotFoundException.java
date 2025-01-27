@@ -10,10 +10,10 @@ public class InstanceNotFoundException extends ApplicationException {
   /**
    * Exception thrown when an instance of a resource could not be found.
    *
-   * @param message   the detail message explaining the cause of the exception.
-   * @param errorCode the error code to be used for this exception.
+   * @param instance the name of the instance where cause the exception.
    */
-  public InstanceNotFoundException(String message, String errorCode) {
-    super(message, ExceptionCode.NOT_FOUND, errorCode);
+  public InstanceNotFoundException(String instance) {
+
+    super(instance + " was not found", ExceptionCode.NOT_FOUND, instance + "-NOT-FOUND");
   }
 }
