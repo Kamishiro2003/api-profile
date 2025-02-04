@@ -7,11 +7,12 @@ import java.util.Optional;
  * Persistence operations for user data.
  */
 public interface UserPersistencePort {
+
   /**
    * Save a new or existing user.
    *
-   * @param data the user to save.
-   * @return the saved user.
+   * @param data the user to save
+   * @return the saved user
    */
   UserModel save(UserModel data);
 
@@ -22,4 +23,5 @@ public interface UserPersistencePort {
    * @return an {@code Optional} containing the found user, or empty if not found
    */
   Optional<UserModel> findByDocumentId(String data);
+
 }

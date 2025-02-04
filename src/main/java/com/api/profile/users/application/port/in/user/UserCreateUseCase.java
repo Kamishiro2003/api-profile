@@ -10,8 +10,8 @@ public interface UserCreateUseCase {
   /**
    * Create a new user.
    *
-   * @param data the user to create.
-   * @return the created user.
+   * @param data the user to create
+   * @return the created user
    */
   UserModel createOne(UserModel data);
 }

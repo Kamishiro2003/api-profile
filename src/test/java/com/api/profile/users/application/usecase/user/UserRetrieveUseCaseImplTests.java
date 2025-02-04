@@ -57,7 +57,7 @@ class UserRetrieveUseCaseImplTests {
     verify(persistencePort, times(1)).findByDocumentId(anyString());
   }
 
-  @DisplayName("Find user by document id - invalid parameter")
+  @DisplayName("Find user by document id - missing documentId")
   @Test
   void findByDocumentId_WhenDocumentIdIsNotProvided_ShouldThrowMissingParameterException() {
     // Act && Assert

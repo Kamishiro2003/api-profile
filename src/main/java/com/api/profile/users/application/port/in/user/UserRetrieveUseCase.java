@@ -10,8 +10,8 @@ public interface UserRetrieveUseCase {
   /**
    * Find user by its documentId.
    *
-   * @param data the document id of the user.
-   * @return the user with the specific document id.
+   * @param data the document id of the user
+   * @return the user with the specific document id
    */
   UserModel findByDocumentId(String data);
 }
