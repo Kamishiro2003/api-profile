@@ -4,6 +4,7 @@ import com.api.profile.users.domain.model.user.DocumentType;
 import com.api.profile.users.domain.model.user.RoleEnum;
 import com.api.profile.users.domain.model.user.UserModel;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.request.UserCreateRequest;
+import com.api.profile.users.infrastructure.adapter.in.rest.model.request.UserUpdateRequest;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.response.UserResponse;
 import com.api.profile.users.infrastructure.adapter.out.persistence.model.UserPersistenceModel;
 import java.time.LocalDateTime;
@@ -60,6 +61,17 @@ public class UserTestUtils {
         .phoneNumber("3025482546")
         .email("pedro.perez@gmail.com")
         .password("dead252003")
+        .role(RoleEnum.ADMIN)
+        .build();
+  }
+  public static UserUpdateRequest getUserUpdateRequest() {
+    return UserUpdateRequest.builder()
+        .name("pedro")
+        .lastName("perez")
+        .documentType(DocumentType.CC)
+        .documentId("765892644")
+        .phoneNumber("3025482546")
+        .email("pedro.perez@gmail.com")
         .role(RoleEnum.ADMIN)
         .build();
   }

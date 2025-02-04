@@ -4,9 +4,9 @@ spring:
   application:
     name: users
   datasource:
-    url: ${MYSQL_URL}
-    username: ${MYSQL_DB_USER}
-    password: ${MYSQL_DB_PASSWORD}
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -17,4 +17,3 @@ spring:
 logging:
   level:
     root: INFO
-    com.api.profile: INFO

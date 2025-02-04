@@ -44,10 +44,13 @@ public class UserCreateUseCaseImpl implements UserCreateUseCase {
       if (e.getMessage().trim().contains("documentId_unique_constraint")) {
         throw new FieldAlreadyExistException(
             "DocumentId already exist, please insert another DocumentId",
-            "DOCUMENT-ID-ALREADY-EXIST");
+            "DOCUMENT-ID-ALREADY-EXIST"
+        );
       } else if (e.getMessage().trim().contains("email_unique_constraint")) {
-        throw new FieldAlreadyExistException("Email already exist, please insert another email",
-            "EMAIL-ALREADY-EXIST");
+        throw new FieldAlreadyExistException(
+            "Email already exist, please insert another email",
+            "EMAIL-ALREADY-EXIST"
+        );
       } else {
         throw e;
       }

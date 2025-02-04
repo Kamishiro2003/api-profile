@@ -34,6 +34,22 @@ class UserRestMapperTests {
     assertEquals(userCreateRequest.getRole(), userModel.getRole());
   }
 
+  @DisplayName("Convert UserUpdateRequest to UserModel")
+  @Test
+  void updateRequestToDomain_ConvertUserUpdateRequestToUserModel_ShouldReturnUserModel() {
+    // Arrange
+    var userUpdateRequest = UserTestUtils.getUserUpdateRequest();
+
+    // Act
+    var userModel = restMapper.updateRequestToDomain(userUpdateRequest);
+
+    // Assert
+    assertEquals(userUpdateRequest.getDocumentId(), userModel.getDocumentId());
+    assertEquals(userUpdateRequest.getEmail(), userModel.getEmail());
+    assertEquals(userUpdateRequest.getLastName(), userModel.getLastName());
+    assertEquals(userUpdateRequest.getRole(), userModel.getRole());
+  }
+
   @DisplayName("Convert UserModel to UserResponse")
   @Test
   void toUserResponse_ConvertUserModelToUserResponse_ShouldReturnUserResponse() {

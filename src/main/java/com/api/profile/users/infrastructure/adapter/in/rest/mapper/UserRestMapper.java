@@ -2,6 +2,7 @@ package com.api.profile.users.infrastructure.adapter.in.rest.mapper;
 
 import com.api.profile.users.domain.model.user.UserModel;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.request.UserCreateRequest;
+import com.api.profile.users.infrastructure.adapter.in.rest.model.request.UserUpdateRequest;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.response.UserResponse;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +29,26 @@ public class UserRestMapper {
         .address(request.getAddress())
         .email(request.getEmail())
         .password(request.getPassword())
+        .role(request.getRole())
+        .build();
+  }
+
+  /**
+   * Convert a {@link UserUpdateRequest} to an {@link UserModel}.
+   *
+   * @param request the update request
+   * @return the domain model
+   */
+  public UserModel updateRequestToDomain(UserUpdateRequest request) {
+
+    return UserModel.builder()
+        .name(request.getName())
+        .lastName(request.getLastName())
+        .documentType(request.getDocumentType())
+        .documentId(request.getDocumentId())
+        .phoneNumber(request.getPhoneNumber())
+        .address(request.getAddress())
+        .email(request.getEmail())
         .role(request.getRole())
         .build();
   }

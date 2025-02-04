@@ -2,8 +2,10 @@ package com.api.profile.users.infrastructure.adapter.in.rest.controller;
 
 import com.api.profile.users.application.port.in.user.UserCreateUseCase;
 import com.api.profile.users.application.port.in.user.UserRetrieveUseCase;
+import com.api.profile.users.application.port.in.user.UserUpdateUseCase;
 import com.api.profile.users.infrastructure.adapter.in.rest.mapper.UserRestMapper;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.request.UserCreateRequest;
+import com.api.profile.users.infrastructure.adapter.in.rest.model.request.UserUpdateRequest;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.response.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,6 +42,8 @@ public class UserController {
   private final UserCreateUseCase createUseCase;
 
   private final UserRetrieveUseCase retrieveUseCase;
+
+  private final UserUpdateUseCase updateUseCase;
 
   private final UserRestMapper restMapper;
 
@@ -102,9 +107,10 @@ public class UserController {
   public ResponseEntity<UserResponse> saveOne(@Valid @RequestBody UserCreateRequest createRequest) {
 
     log.info("Received request to create a new user");
-    return new ResponseEntity<>(restMapper.toUserResponse(
-        createUseCase.createOne(restMapper.createRequestToDomain(createRequest))),
-        HttpStatus.CREATED);
+    return new ResponseEntity<>(
+        restMapper.toUserResponse(createUseCase.createOne(restMapper.createRequestToDomain(
+            createRequest))), HttpStatus.CREATED
+    );
   }
 
   /**
@@ -158,5 +164,69 @@ public class UserController {
     log.info("Received request to retrieve a user by document id");
     return new ResponseEntity<>(
         restMapper.toUserResponse(retrieveUseCase.findByDocumentId(documentId)), HttpStatus.OK);
+  }
+
+  /**
+   * Update a user by document id.
+   *
+   * @param documentId the document id of the user
+   * @param request    the user data
+   */
+  @Operation(summary = "Update user by document id")
+  @ApiResponses(
+      value = {
+          @ApiResponse(
+              description = "User updated successfully",
+              responseCode = "204",
+              content = {
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = UserUpdateRequest.class)
+                  )
+              }
+          ),
+          @ApiResponse(
+              description = "USER was not found",
+              responseCode = "401",
+              content = {
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = UserUpdateRequest.class)
+                  )
+              }
+          ),
+          @ApiResponse(
+              responseCode = "409",
+              description = """
+                  User with the specified document id already exists
+                  User with the specified email already exists
+                  """,
+              content = {
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = UserUpdateRequest.class)
+                  )
+              }
+          ),
+          @ApiResponse(
+              responseCode = "500",
+              description = "Internal Server Error. An unexpected error occurred on the server.",
+              content = {
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = UserUpdateRequest.class)
+                  )
+              }
+          )
+      }
+  )
+  @PutMapping("/{documentId}")
+  public ResponseEntity<Void> updateUserByDocumentId(@PathVariable("documentId") String documentId,
+      @Valid @RequestBody UserUpdateRequest request
+  ) {
+
+    log.info("Received request to update user data");
+    updateUseCase.updateByDocumentId(documentId, restMapper.updateRequestToDomain(request));
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 }
