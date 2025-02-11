@@ -7,7 +7,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.api.profile.users.application.port.in.user.PasswordHashCreateUseCase;
 import com.api.profile.users.application.port.out.UserPersistencePort;
 import com.api.profile.users.domain.exception.FieldAlreadyExistException;
 import com.api.profile.users.domain.model.user.UserModel;
@@ -21,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import utils.UserTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,7 +32,7 @@ class UserCreateUseCaseImplTests {
   private UserPersistencePort persistencePort;
 
   @Mock
-  private PasswordHashCreateUseCase passwordHash;
+  private PasswordEncoder passwordEncoder;
 
   @InjectMocks
   private UserCreateUseCaseImpl createUseCase;
@@ -47,8 +47,8 @@ class UserCreateUseCaseImplTests {
   @Test
   void createOne_WhenUserDataIsValid_ShouldReturnUserCreated() {
     // Arrange
-    var passwordHashed = passwordHash.hashPassword(user.getPassword());
-    when(passwordHash.hashPassword(any(String.class))).thenReturn(passwordHashed);
+    var passwordHashed = passwordEncoder.encode(user.getPassword());
+    when(passwordEncoder.encode(any(String.class))).thenReturn(passwordHashed);
     when(persistencePort.save(any(UserModel.class))).thenReturn(user);
 
     // Act
@@ -68,12 +68,11 @@ class UserCreateUseCaseImplTests {
           "other exception"
       }
   )
-  void createByOne_WhenDataIntegrityViolation_ShouldThrowFieldAlreadyExistException(
-      String constraint
+  void createByOne_WhenDataIntegrityViolation_ShouldThrowFieldAlreadyExistException(String constraint
   ) {
     // Arrange
-    when(persistencePort.save(any(UserModel.class))).thenThrow(
-        new DataIntegrityViolationException(constraint));
+    when(persistencePort.save(any(UserModel.class))).thenThrow(new DataIntegrityViolationException(
+        constraint));
 
     // Act & Assert
     if ("email_unique_constraint".equals(constraint) ||

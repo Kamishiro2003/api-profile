@@ -24,8 +24,10 @@ class ErrorCodeTests {
           "INVALID_INPUT, BAD_REQUEST",
           "INVALID_ID, BAD_REQUEST",
           "PARAMETER_NOT_PROVIDED, BAD_REQUEST",
+          "INVALID_PASSWORD, BAD_REQUEST",
           "NOT_FOUND, NOT_FOUND",
-          "DUPLICATED_RECORD, CONFLICT"
+          "DUPLICATED_RECORD, CONFLICT",
+          "UNAUTHORIZED, UNAUTHORIZED"
       }
   )
   void getHttpStatusFromExceptionCode_MapExceptionCodeToHttpStatus_ShouldReturnHttpStatus(

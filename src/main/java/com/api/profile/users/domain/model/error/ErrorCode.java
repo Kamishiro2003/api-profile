@@ -18,8 +18,10 @@ public class ErrorCode {
   public HttpStatus getHttpStatusFromExceptionCode(ExceptionCode exceptionCode) {
 
     return switch (exceptionCode) {
-      case INVALID_INPUT, INVALID_ID, PARAMETER_NOT_PROVIDED -> HttpStatus.BAD_REQUEST;
+      case INVALID_INPUT, INVALID_ID, PARAMETER_NOT_PROVIDED, INVALID_PASSWORD ->
+          HttpStatus.BAD_REQUEST;
       case NOT_FOUND -> HttpStatus.NOT_FOUND;
+      case UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
       case DUPLICATED_RECORD -> HttpStatus.CONFLICT;
     };
   }
