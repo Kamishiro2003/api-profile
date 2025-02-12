@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
  * REST controller for managing test operations.
  */
 @RestController
-@RequestMapping("api/v0/test")
+@RequestMapping("/api/v1/test")
 public class TestController {
 
   /**
@@ -18,6 +18,6 @@ public class TestController {
    */
   @GetMapping("/helloWorld")
   public ResponseEntity<String> helloWord() {
-    return new ResponseEntity<>("Hola Mundo!", HttpStatus.OK);
+    return new ResponseEntity<>("Hola Mundo xd!", HttpStatus.OK);
   }
 }

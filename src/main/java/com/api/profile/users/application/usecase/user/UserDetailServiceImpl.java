@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @RequiredArgsConstructor
-public class UserDetailServiceImpl implements UserDetailsService {
+public class  UserDetailServiceImpl implements UserDetailsService {
 
   private final JwtUtilsUseCase jwtUtilsUseCase;
 
@@ -99,7 +99,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     return new UsernamePasswordAuthenticationToken(
         documentId,
-        password,
+        userDetails.getPassword(),
         userDetails.getAuthorities()
     );
   }
