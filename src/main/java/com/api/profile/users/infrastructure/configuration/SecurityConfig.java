@@ -11,7 +11,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -27,6 +29,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -36,29 +39,30 @@ public class SecurityConfig {
    * Configures the main security filter chain with JWT token validation, stateless session
    * management, and endpoint access rules.
    *
-   * @param httpSecurity           the HTTP security configuration
-   * @param authenticationProvider the authentication provider for handling user authentication
+   * @param httpSecurity the HTTP security configuration
    * @return a configured {@link SecurityFilterChain}
    * @throws Exception if an error occurs during configuration
    */
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
-      AuthenticationProvider authenticationProvider
+  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity
   ) throws Exception {
 
     return httpSecurity.csrf(AbstractHttpConfigurer::disable)
-        .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .httpBasic(Customizer.withDefaults())
+        .sessionManagement(session ->
+            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS
+            )
         )
         .authorizeHttpRequests(http -> {
           // Public endpoints
-          http.requestMatchers(HttpMethod.GET, "api/v0/test/helloWorld").permitAll();
-
+          http.requestMatchers(HttpMethod.GET, "/api/v1/test/**").permitAll();
+          http.requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll();
+          http.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll();
           // Private endpoints
-          http.requestMatchers("/api/v1/users").permitAll();
-          http.requestMatchers("/api/v1/**").hasRole(RoleEnum.ADMIN.toString());
-
+          http.requestMatchers("/api/v1/users/**").hasRole(RoleEnum.ADMIN.toString());
+          // Deny all other requests
           http.anyRequest().denyAll();
+
         })
         .addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class)
         .build();

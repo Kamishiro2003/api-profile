@@ -49,24 +49,38 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 
     String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-    if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
-      String token = jwtToken.substring(7);
+    if (jwtToken != null) {
+      try {
 
-      DecodedJWT decodedJwt = jwtUtils.validateToken(token);
-      String documentId = jwtUtils.extractDocumentId(decodedJwt);
-      String stringAuthorities = jwtUtils.getSpecificClaim(decodedJwt, "authorities").asString();
+        String token = jwtToken.substring(7);
 
-      Collection<? extends GrantedAuthority> authorities =
-          AuthorityUtils.commaSeparatedStringToAuthorityList(stringAuthorities);
+        DecodedJWT decodedJwt = jwtUtils.validateToken(token);
+        String documentId = jwtUtils.extractDocumentId(decodedJwt);
+        String stringAuthorities = jwtUtils.getSpecificClaim(decodedJwt, "authorities").asString();
 
-      SecurityContext context = SecurityContextHolder.createEmptyContext();
-      Authentication authenticationToken =
-          new UsernamePasswordAuthenticationToken(documentId, null, authorities);
-      context.setAuthentication(authenticationToken);
-      SecurityContextHolder.setContext(context);
+        Collection<? extends GrantedAuthority> authorities =
+            AuthorityUtils.commaSeparatedStringToAuthorityList(stringAuthorities);
 
-    } else {
-      throw new InvalidTokenException();
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        Authentication authenticationToken =
+            new UsernamePasswordAuthenticationToken(documentId, null, authorities);
+        context.setAuthentication(authenticationToken);
+        SecurityContextHolder.setContext(context);
+
+      } catch (InvalidTokenException e) {
+        log.warn("Invalid token: {}", e.getMessage());
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("""
+                {
+                    "code": "TOKEN-INVALID",
+                    "message": "Token is invalid",
+                    "path": "%s",
+                    "timestamp": "%s"
+                }
+            """.formatted(request.getRequestURI(), java.time.LocalDateTime.now()));
+        return;
+      }
     }
     filterChain.doFilter(request, response);
   }

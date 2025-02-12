@@ -15,12 +15,4 @@ public class InvalidTokenException extends ApplicationException {
   public InvalidTokenException(String msg) {
     super("Token is invalid\n " + msg, ExceptionCode.UNAUTHORIZED, "TOKEN-INVALID");
   }
-
-  /**
-   * Constructs the InvalidTokenException without parameter and with a default message, exception
-   * code, and identifier.
-   */
-  public InvalidTokenException() {
-    super("Token is invalid", ExceptionCode.UNAUTHORIZED, "TOKEN-INVALID");
-  }
 }

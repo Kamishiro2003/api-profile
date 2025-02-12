@@ -2,10 +2,12 @@ package com.api.profile.users.infrastructure.configuration.filter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.api.profile.users.domain.exception.InvalidTokenException;
@@ -18,6 +20,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import utils.UserTestUtils;
 
@@ -93,38 +98,48 @@ class JwtTokenValidatorTests {
     Collection<SimpleGrantedAuthority> expectedAuthorities =
         Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
     assertEquals(expectedAuthorities, authentication.getAuthorities());
-
-    verify(filterChain, times(1)).doFilter(request, response);
   }
 
-  @DisplayName("doFilterInternal - Invalid JWT Token")
   @Test
-  void doFilterInternal_WithInvalidJwtToken_ShouldThrowExceptionAndNotSetAuthentication() {
-    // Arrange
-    var invalidToken = "invalid_token";
-    when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(invalidToken);
-
-    // Act & Assert
-
-    assertThrows(
-        InvalidTokenException.class,
-        () -> jwtTokenValidator.doFilterInternal(request, response, filterChain)
-    );
-    verify(request, times(1)).getHeader(HttpHeaders.AUTHORIZATION);
-  }
-
-  @DisplayName("doFilterInternal - No JWT Token")
-  @Test
-  void doFilterInternal_NoJwtToken_ShouldNotSetAuthentication() {
+  void doFilterInternal_NoJwtToken_ShouldNotSetAuthentication()
+      throws ServletException, IOException {
     // Arrange
     when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
 
-    // Act & Assert
+    // Act
+    jwtTokenValidator.doFilterInternal(request, response, filterChain);
 
-    assertThrows(
-        InvalidTokenException.class,
-        () -> jwtTokenValidator.doFilterInternal(request, response, filterChain)
-    );
-    verify(request, times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+    // Assert
+    SecurityContext context = SecurityContextHolder.getContext();
+    assertNotNull(context);
+    assertNull(context.getAuthentication());
+    verify(filterChain, times(1)).doFilter(request, response);
+  }
+
+  @Test
+  void doFilterInternal_InvalidJwtToken_ShouldReturnErrorResponse()
+      throws ServletException, IOException {
+    // Arrange
+    String invalidToken = "Bearer invalid_jwt_token";
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter printWriter = new PrintWriter(stringWriter);
+
+    when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(invalidToken);
+    when(jwtUtils.validateToken("invalid_jwt_token")).thenThrow(new InvalidTokenException(
+        "Invalid token"));
+    when(response.getWriter()).thenReturn(printWriter);
+
+    // Act
+    jwtTokenValidator.doFilterInternal(request, response, filterChain);
+
+    // Assert
+    verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    verify(response).setContentType("application/json");
+    printWriter.flush();
+    String responseBody = stringWriter.toString();
+    assertTrue(responseBody.contains("TOKEN-INVALID"));
+    assertTrue(responseBody.contains("Token is invalid"));
+
+    verifyNoInteractions(filterChain);
   }
 }
