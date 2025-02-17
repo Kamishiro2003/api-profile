@@ -47,23 +47,23 @@ Para ejecutar este proyecto, asegúrate de tener instalado lo siguiente:
   
 3. **Genera el Build**
    Construye el Proyecto con Gradle
-   ./gradlew build
+      - ./gradlew build
   
 4. **Inicia los Contenedores Docker**
-   docker-compose up --build
+   - docker-compose up --build
 
 5. **Verifica la Documentación del swagger**
    Una vez que el proyecto esté en funcionamiento, accede a la documentación de la API en:
-   http://localhost:8080/swagger-ui/index.html
+   - http://localhost:8080/swagger-ui/index.html
 
 ---
 
 ## **Cobertura de Pruebas**
 Se ha implementado Jacoco para medir la cobertura de pruebas. El informe indica una cobertura del 99%.
   - Para generar el informe localmente:
-      ./gradlew jacocoTestReport
+      - ./gradlew jacocoTestReport
   - El informe estará disponible en:
-      build/reports/jacoco/test/html/index.html
+      - build/reports/jacoco/test/html/index.html
 
 ---
 
