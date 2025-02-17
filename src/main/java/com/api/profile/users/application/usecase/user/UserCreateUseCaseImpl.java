@@ -1,6 +1,5 @@
 package com.api.profile.users.application.usecase.user;
 
-import com.api.profile.users.application.port.in.user.PasswordHashCreateUseCase;
 import com.api.profile.users.application.port.in.user.UserCreateUseCase;
 import com.api.profile.users.application.port.out.UserPersistencePort;
 import com.api.profile.users.domain.exception.FieldAlreadyExistException;
@@ -10,6 +9,7 @@ import java.time.ZoneOffset;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -22,7 +22,7 @@ public class UserCreateUseCaseImpl implements UserCreateUseCase {
 
   private final UserPersistencePort persistencePort;
 
-  private final PasswordHashCreateUseCase passwordHash;
+  private final PasswordEncoder passwordEncoder;
 
   /**
    * {@inheritDoc}
@@ -35,7 +35,7 @@ public class UserCreateUseCaseImpl implements UserCreateUseCase {
     data.setCreatedAt(now);
     data.setUpdatedAt(now);
     data.setIsActive(true);
-    data.setPassword(passwordHash.hashPassword(data.getPassword()));
+    data.setPassword(passwordEncoder.encode(data.getPassword()));
     try {
       log.debug("saving user: {}", data);
       return persistencePort.save(data);

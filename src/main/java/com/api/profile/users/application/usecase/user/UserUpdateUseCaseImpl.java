@@ -4,13 +4,16 @@ import com.api.profile.users.application.port.in.user.UserUpdateUseCase;
 import com.api.profile.users.application.port.out.UserPersistencePort;
 import com.api.profile.users.domain.exception.FieldAlreadyExistException;
 import com.api.profile.users.domain.exception.InstanceNotFoundException;
+import com.api.profile.users.domain.exception.InvalidPasswordException;
 import com.api.profile.users.domain.exception.MissingParameterException;
+import com.api.profile.users.domain.model.user.PasswordModel;
 import com.api.profile.users.domain.model.user.UserModel;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -23,11 +26,14 @@ public class UserUpdateUseCaseImpl implements UserUpdateUseCase {
 
   private final UserPersistencePort persistencePort;
 
+  private final PasswordEncoder passwordEncoder;
+
   /**
    * {@inheritDoc}
    */
   @Override
   public void updateByDocumentId(String documentId, UserModel data) {
+
     log.info("updating user from application: {}", documentId);
     if (documentId == null) {
       throw new MissingParameterException("documentId");
@@ -63,6 +69,30 @@ public class UserUpdateUseCaseImpl implements UserUpdateUseCase {
               throw e;
             }
           }
+        }, () -> {
+          throw new InstanceNotFoundException("USER");
+        }
+    );
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void updatePassword(PasswordModel data) {
+
+    log.info("updating user password from application: {}", data.getDocumentId());
+    if (!data.getNewPassword().equals(data.getConfirmPassword())) {
+      throw new InvalidPasswordException("newPassword", "confirmPassword");
+    }
+    persistencePort.findByDocumentId(data.getDocumentId()).ifPresentOrElse(
+        userToUpdate -> {
+          if (!passwordEncoder.matches(data.getOldPassword(), userToUpdate.getPassword())) {
+            throw new InvalidPasswordException();
+          }
+          userToUpdate.setPassword(passwordEncoder.encode(data.getNewPassword()));
+          persistencePort.save(userToUpdate);
+          log.info("Password updated successfully for documentId: {}", data.getDocumentId());
         }, () -> {
           throw new InstanceNotFoundException("USER");
         }

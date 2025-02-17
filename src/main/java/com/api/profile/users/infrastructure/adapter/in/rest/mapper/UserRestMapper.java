@@ -1,9 +1,12 @@
 package com.api.profile.users.infrastructure.adapter.in.rest.mapper;
 
+import com.api.profile.users.domain.model.user.PasswordModel;
 import com.api.profile.users.domain.model.user.UserModel;
+import com.api.profile.users.infrastructure.adapter.in.rest.model.request.PasswordUpdateRequest;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.request.UserCreateRequest;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.request.UserUpdateRequest;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.response.UserResponse;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,7 +14,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class UserRestMapper {
-
   /**
    * Convert a {@link UserCreateRequest} to an {@link UserModel}.
    *
@@ -19,7 +21,6 @@ public class UserRestMapper {
    * @return the domain model
    */
   public UserModel createRequestToDomain(UserCreateRequest request) {
-
     return UserModel.builder()
         .name(request.getName())
         .lastName(request.getLastName())
@@ -40,7 +41,6 @@ public class UserRestMapper {
    * @return the domain model
    */
   public UserModel updateRequestToDomain(UserUpdateRequest request) {
-
     return UserModel.builder()
         .name(request.getName())
         .lastName(request.getLastName())
@@ -54,13 +54,27 @@ public class UserRestMapper {
   }
 
   /**
+   * Convert a {@link PasswordUpdateRequest} to a {@link PasswordModel}.
+   *
+   * @param data the update request
+   * @return the domain model
+   */
+  public PasswordModel toPasswordModel(String username, PasswordUpdateRequest data) {
+    return PasswordModel.builder()
+        .documentId(username)
+        .oldPassword(data.getOldPassword())
+        .newPassword(data.getNewPassword())
+        .confirmPassword(data.getConfirmPassword())
+        .build();
+  }
+
+  /**
    * Convert a {@link UserModel} to a {@link UserResponse}.
    *
    * @param data the domain model
    * @return the response model
    */
   public UserResponse toUserResponse(UserModel data) {
-
     return UserResponse.builder()
         .name(data.getName())
         .lastName(data.getLastName())

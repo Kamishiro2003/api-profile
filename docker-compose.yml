@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   api-profile-image:
     image: api-profile-image
@@ -18,6 +16,8 @@ services:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_PORT=${MYSQL_PORT}
       - MYSQL_HOST=${MYSQL_HOST}
+      - PRIVATE_KEY=${PRIVATE_KEY}
+      - USER_GENERATOR=${USER_GENERATOR}
     depends_on:
       - mysql
   mysql:
