@@ -1,9 +1,14 @@
 package com.api.profile.users.infrastructure.configuration;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
+import org.springframework.http.HttpHeaders;
 
 /**
  * OpenApi configuration.
@@ -25,9 +30,21 @@ import io.swagger.v3.oas.annotations.servers.Server;
         ),
         @Server(
             description = "PROD",
-            url = "https://3.83.39.17:8080"
+            url = "https://prod:port"
         )
-    }
+    },
+    security = @SecurityRequirement(
+        name = "Security Token"
+    )
+)
+@SecurityScheme(
+    name = "Security Token",
+    description = "Access Token",
+    type = SecuritySchemeType.HTTP,
+    paramName = HttpHeaders.AUTHORIZATION,
+    in = SecuritySchemeIn.HEADER,
+    scheme = "bearer",
+    bearerFormat = "JWT"
 )
 public class SwaggerConfig {
 
