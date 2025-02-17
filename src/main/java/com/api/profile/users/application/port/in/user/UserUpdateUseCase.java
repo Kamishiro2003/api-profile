@@ -1,5 +1,6 @@
 package com.api.profile.users.application.port.in.user;
 
+import com.api.profile.users.domain.model.user.PasswordModel;
 import com.api.profile.users.domain.model.user.UserModel;
 
 /**
@@ -14,4 +15,11 @@ public interface UserUpdateUseCase {
    * @param data the data of the user
    */
   void updateByDocumentId(String documentId, UserModel data);
+
+  /**
+   * Update user password.
+   *
+   * @param data the details for changing user password.
+   */
+  void updatePassword(PasswordModel data);
 }

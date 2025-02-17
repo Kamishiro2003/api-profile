@@ -59,17 +59,17 @@ public class UserCreateRequest {
   )
   private String address;
 
-  @NotBlank(message = "Field lastName cannot be empty or null")
+  @NotBlank(message = "Field email cannot be empty or null")
   @Size(
       max = 200,
-      message = "Field lastName must not exceed 200 characters"
+      message = "Field email must not exceed 200 characters"
   )
   private String email;
 
-  @NotBlank(message = "Field lastName cannot be empty or null")
+  @NotBlank(message = "Field password cannot be empty or null")
   @Size(
-      max = 200,
-      message = "Field lastName must not exceed 150 characters"
+      max = 80,
+      message = "Field password must not exceed 80 characters"
   )
   private String password;
 

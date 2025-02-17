@@ -4,6 +4,7 @@ import com.api.profile.users.application.port.in.user.UserCreateUseCase;
 import com.api.profile.users.application.port.in.user.UserRetrieveUseCase;
 import com.api.profile.users.application.port.in.user.UserUpdateUseCase;
 import com.api.profile.users.infrastructure.adapter.in.rest.mapper.UserRestMapper;
+import com.api.profile.users.infrastructure.adapter.in.rest.model.request.PasswordUpdateRequest;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.request.UserCreateRequest;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.request.UserUpdateRequest;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.response.UserResponse;
@@ -18,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,7 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
 )
 @Slf4j
 public class UserController {
-
   private final UserCreateUseCase createUseCase;
 
   private final UserRetrieveUseCase retrieveUseCase;
@@ -105,7 +107,6 @@ public class UserController {
   )
   @PostMapping
   public ResponseEntity<UserResponse> saveOne(@Valid @RequestBody UserCreateRequest createRequest) {
-
     log.info("Received request to create a new user");
     return new ResponseEntity<>(
         restMapper.toUserResponse(createUseCase.createOne(restMapper.createRequestToDomain(
@@ -136,7 +137,7 @@ public class UserController {
           ),
           @ApiResponse(
               description = "USER was not found",
-              responseCode = "401",
+              responseCode = "404",
               content = {
                   @Content(
                       mediaType = "application/json",
@@ -160,7 +161,6 @@ public class UserController {
   public ResponseEntity<UserResponse> getUserByDocumentId(
       @PathVariable("documentId") String documentId
   ) {
-
     log.info("Received request to retrieve a user by document id");
     return new ResponseEntity<>(
         restMapper.toUserResponse(retrieveUseCase.findByDocumentId(documentId)), HttpStatus.OK);
@@ -187,7 +187,7 @@ public class UserController {
           ),
           @ApiResponse(
               description = "USER was not found",
-              responseCode = "401",
+              responseCode = "404",
               content = {
                   @Content(
                       mediaType = "application/json",
@@ -224,9 +224,70 @@ public class UserController {
   public ResponseEntity<Void> updateUserByDocumentId(@PathVariable("documentId") String documentId,
       @Valid @RequestBody UserUpdateRequest request
   ) {
-
     log.info("Received request to update user data");
     updateUseCase.updateByDocumentId(documentId, restMapper.updateRequestToDomain(request));
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  /**
+   * Update user password.
+   *
+   * @param request     details for changing user password
+   */
+  @Operation(summary = "Update user password")
+  @ApiResponses(
+      value = {
+          @ApiResponse(
+              description = "User password updated successfully",
+              responseCode = "204",
+              content = {
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = PasswordUpdateRequest.class)
+                  )
+              }
+          ),
+          @ApiResponse(
+              description = """
+                  Passwords are not matches
+                  Old password is incorrect
+                  """,
+              responseCode = "400",
+              content = {
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = PasswordUpdateRequest.class)
+                  )
+              }
+          ),
+          @ApiResponse(
+              description = "USER was not found",
+              responseCode = "404",
+              content = {
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = PasswordUpdateRequest.class)
+                  )
+              }
+          ),
+          @ApiResponse(
+              responseCode = "500",
+              description = "Internal Server Error. An unexpected error occurred on the server.",
+              content = {
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = PasswordUpdateRequest.class)
+                  )
+              }
+          )
+      }
+  )
+  @PutMapping("/update-password")
+  public ResponseEntity<Void> updatePassword(@Valid @RequestBody PasswordUpdateRequest request
+  ) {
+    log.info("Received request to update user password");
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    updateUseCase.updatePassword(restMapper.toPasswordModel(authentication.getName(), request));
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 }

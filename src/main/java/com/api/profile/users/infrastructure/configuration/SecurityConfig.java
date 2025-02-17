@@ -7,7 +7,6 @@ import com.api.profile.users.util.jwt.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -49,17 +48,22 @@ public class SecurityConfig {
 
     return httpSecurity.csrf(AbstractHttpConfigurer::disable)
         .httpBasic(Customizer.withDefaults())
-        .sessionManagement(session ->
-            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS
-            )
-        )
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(http -> {
           // Public endpoints
-          http.requestMatchers(HttpMethod.GET, "/api/v1/test/**").permitAll();
-          http.requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll();
-          http.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll();
+          http.requestMatchers(
+              "/api/v1/test/helloWorld",
+              "/api/v1/users",
+              "/api/v1/auth/log-in",
+              "/swagger-ui/**",
+              "/swagger-ui.html",
+              "/v3/api-docs/**",
+              "/v2/api-docs/**"
+          ).permitAll();
           // Private endpoints
-          http.requestMatchers("/api/v1/users/**").hasRole(RoleEnum.ADMIN.toString());
+          http.requestMatchers("/api/v1/users/{documentId}").hasRole(RoleEnum.ADMIN.toString());
+          http.requestMatchers("/api/v1/users/update-password").authenticated();
           // Deny all other requests
           http.anyRequest().denyAll();
 
