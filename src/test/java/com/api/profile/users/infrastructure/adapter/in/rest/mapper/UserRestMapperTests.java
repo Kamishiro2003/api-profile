@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.userdetails.UserDetails;
 import utils.UserTestUtils;
 
 class UserRestMapperTests {
@@ -64,5 +65,22 @@ class UserRestMapperTests {
     assertEquals(userResponse.getEmail(), userModel.getEmail());
     assertEquals(userResponse.getLastName(), userModel.getLastName());
     assertEquals(userResponse.getRole(), userModel.getRole());
+  }
+
+  @DisplayName("Convert PasswordUpdateRequest to PasswordModel")
+  @Test
+  void toPasswordModel_ConvertPasswordUpdateRequestToPasswordModel_ShouldReturnPasswordModel() {
+    // Arrange
+    var passwordUpdateRequest = UserTestUtils.getPasswordUpdateRequest();
+    var username = "765892644";
+
+    // Act
+    var passwordModel = restMapper.toPasswordModel(username, passwordUpdateRequest);
+
+    // Assert
+    assertEquals(username, passwordModel.getDocumentId());
+    assertEquals(passwordUpdateRequest.getOldPassword(), passwordModel.getOldPassword());
+    assertEquals(passwordUpdateRequest.getNewPassword(), passwordModel.getNewPassword());
+    assertEquals(passwordUpdateRequest.getConfirmPassword(), passwordModel.getConfirmPassword());
   }
 }

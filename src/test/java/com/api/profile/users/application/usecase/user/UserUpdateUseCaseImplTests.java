@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,7 +12,9 @@ import static org.mockito.Mockito.when;
 import com.api.profile.users.application.port.out.UserPersistencePort;
 import com.api.profile.users.domain.exception.FieldAlreadyExistException;
 import com.api.profile.users.domain.exception.InstanceNotFoundException;
+import com.api.profile.users.domain.exception.InvalidPasswordException;
 import com.api.profile.users.domain.exception.MissingParameterException;
+import com.api.profile.users.domain.model.user.PasswordModel;
 import com.api.profile.users.domain.model.user.UserModel;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +27,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import utils.UserTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,6 +36,11 @@ class UserUpdateUseCaseImplTests {
   private UserModel userModel;
 
   private String documentId;
+
+  private PasswordModel passwordModel;
+
+  @Mock
+  private PasswordEncoder passwordEncoder;
 
   @Mock
   private UserPersistencePort persistencePort;
@@ -42,6 +51,7 @@ class UserUpdateUseCaseImplTests {
   @BeforeEach
   void setUp() {
 
+    passwordModel = UserTestUtils.getPasswordModel();
     userModel = UserTestUtils.getValiduserModel();
     documentId = userModel.getDocumentId();
   }
@@ -125,4 +135,75 @@ class UserUpdateUseCaseImplTests {
     verify(persistencePort, times(1)).findByDocumentId(anyString());
     verify(persistencePort, times(1)).save(any(UserModel.class));
   }
+
+
+  @DisplayName("Update password - valid data")
+  @Test
+  void updatePassword_WhenPasswordModelIsProvided_ShouldUpdatePassword() {
+    // Arrange
+    String encodedPassword = "encodedPassword";
+    userModel.setPassword("encodedPassword");
+    when(persistencePort.findByDocumentId(anyString())).thenReturn(Optional.of(userModel));
+    when(passwordEncoder.matches(
+        passwordModel.getOldPassword(),
+        userModel.getPassword()
+    )).thenReturn(true);
+    when(passwordEncoder.encode(anyString())).thenReturn(encodedPassword);
+
+    // Act
+    updateUseCase.updatePassword(passwordModel);
+
+    // Assert
+    assertEquals(encodedPassword, userModel.getPassword());
+    verify(persistencePort, times(1)).findByDocumentId(anyString());
+    verify(passwordEncoder, times(1)).matches(
+        passwordModel.getOldPassword(),
+        userModel.getPassword()
+    );
+    verify(passwordEncoder, times(1)).encode(anyString());
+  }
+
+  @DisplayName("Update password - new password and confirm password do not match")
+  @Test
+  void updatePassword_WhenNewPasswordAndConfirmPasswordDoNotMatch_ShouldThrowInvalidPasswordException() {
+    // Arrange
+    passwordModel.setConfirmPassword("differentPassword");
+
+    // Act & Assert
+    assertThrows(
+        InvalidPasswordException.class, () -> {
+          updateUseCase.updatePassword(passwordModel);
+        }
+    );
+    verify(persistencePort, never()).save(any(UserModel.class));
+  }
+
+  @DisplayName("Update password - invalid old password")
+  @Test
+  void updatePassword_WhenOldPasswordDoesNotMatch_ShouldThrowInvalidPasswordException() {
+    // Arrange
+    when(persistencePort.findByDocumentId(passwordModel.getDocumentId())).thenReturn(Optional.of(
+        userModel));
+    when(passwordEncoder.matches(
+        passwordModel.getOldPassword(),
+        userModel.getPassword()
+    )).thenReturn(false);
+
+    // Act & Assert
+    InvalidPasswordException exception = assertThrows(
+        InvalidPasswordException.class, () -> {
+          updateUseCase.updatePassword(passwordModel);
+        }
+    );
+
+    assertEquals("password provided is incorrect", exception.getMessage());
+    verify(persistencePort, times(1)).findByDocumentId(anyString());
+    verify(passwordEncoder, times(1)).matches(
+        passwordModel.getOldPassword(),
+        userModel.getPassword()
+    );
+    verify(persistencePort, never()).save(any(UserModel.class));
+  }
+
+
 }

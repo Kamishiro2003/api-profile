@@ -3,7 +3,9 @@ package com.api.profile.users.infrastructure.adapter.in.rest.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,8 +13,10 @@ import static org.mockito.Mockito.when;
 import com.api.profile.users.application.port.in.user.UserCreateUseCase;
 import com.api.profile.users.application.port.in.user.UserRetrieveUseCase;
 import com.api.profile.users.application.port.in.user.UserUpdateUseCase;
+import com.api.profile.users.domain.model.user.PasswordModel;
 import com.api.profile.users.domain.model.user.UserModel;
 import com.api.profile.users.infrastructure.adapter.in.rest.mapper.UserRestMapper;
+import com.api.profile.users.infrastructure.adapter.in.rest.model.request.PasswordUpdateRequest;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.request.UserCreateRequest;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.request.UserUpdateRequest;
 import com.api.profile.users.infrastructure.adapter.in.rest.model.response.UserResponse;
@@ -24,6 +28,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import utils.UserTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,6 +55,10 @@ class UserControllerTests {
 
   private UserUpdateRequest updateRequest;
 
+  private PasswordUpdateRequest passwordUpdateRequest;
+
+  private PasswordModel passwordModel;
+
   private String documentId;
 
   private UserModel userModel;
@@ -61,6 +72,8 @@ class UserControllerTests {
     userResponse = UserTestUtils.getUserResponse();
     createRequest = UserTestUtils.getUserCreateRequest();
     updateRequest = UserTestUtils.getUserUpdateRequest();
+    passwordUpdateRequest = UserTestUtils.getPasswordUpdateRequest();
+    passwordModel = UserTestUtils.getPasswordModel();
   }
 
   @DisplayName("Create user - valid data")
@@ -113,5 +126,29 @@ class UserControllerTests {
     assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     verify(mapper, times(1)).updateRequestToDomain(any(UserUpdateRequest.class));
     verify(updateUseCase, times(1)).updateByDocumentId(anyString(), any(UserModel.class));
+  }
+
+  @DisplayName("Update password - valid data")
+  @Test
+  void updatePassword_WhenValidRequest_ShouldReturnNoContent() {
+    // Arrange
+    String username = userModel.getDocumentId();
+
+    Authentication authentication = mock(Authentication.class);
+    when(authentication.getName()).thenReturn(username);
+    SecurityContext securityContext = mock(SecurityContext.class);
+    when(securityContext.getAuthentication()).thenReturn(authentication);
+    SecurityContextHolder.setContext(securityContext);
+    when(mapper.toPasswordModel(eq(username), any(PasswordUpdateRequest.class))).thenReturn(
+        passwordModel);
+    doNothing().when(updateUseCase).updatePassword(any(PasswordModel.class));
+
+    // Act
+    var response = userController.updatePassword(passwordUpdateRequest);
+
+    // Assert
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    verify(mapper, times(1)).toPasswordModel(eq(username), any(PasswordUpdateRequest.class));
+    verify(updateUseCase, times(1)).updatePassword(any(PasswordModel.class));
   }
 }
