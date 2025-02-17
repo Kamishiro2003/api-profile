@@ -70,6 +70,6 @@ Se ha implementado Jacoco para medir la cobertura de pruebas. El informe indica 
 ## **Contacto**
 Si tienes preguntas o sugerencias, no dudes en contactarme:
 
-**Nombre**: Darwin Granados
-**Correo Electrónico**: darwingranados54@gmail.com
-**GitHub**: [Kamishiro2003](https://github.com/Kamishiro2003)
+- **Nombre**: Darwin Granados
+- **Correo Electrónico**: darwingranados54@gmail.com
+- **GitHub**: [Kamishiro2003](https://github.com/Kamishiro2003)
