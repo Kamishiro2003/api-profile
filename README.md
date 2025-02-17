@@ -37,12 +37,12 @@ Para ejecutar este proyecto, asegúrate de tener instalado lo siguiente:
 ## **Configuración Inicial**
 
 1. **Clona el Repositorio**
-   git clone https://github.com/Kamishiro2003/api-profile.git
-   cd api-profile
+   - git clone https://github.com/Kamishiro2003/api-profile.git
+   - cd api-profile
    
 2. **Configura el Archivo .env**
    - Copia el archivo .env.example a .env:
-       cp .env.example .env
+      - cp .env.example .env
    - Edita el archivo .env con las variables necesarias para el entorno
   
 3. **Genera el Build**
